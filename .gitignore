@@ -1,0 +1,9 @@
+
+Unity/Library/*
+Unity/obj/*
+Unity/ProjectSettings/*
+*.meta
+*.sln
+*.userprefs
+*.unityproj
+*.csproj
