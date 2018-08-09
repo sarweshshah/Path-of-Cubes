@@ -3,7 +3,7 @@ using System.Threading;
 using System.Text;
 using System.Collections;
 using System.IO;
-using System; 
+using System;
 
 /// \mainpage
 /// \section Overview
@@ -103,80 +103,84 @@ using System;
 
 //namespace MakingThings
 //{
-  /// <summary>
-  /// The OscMessage class is a data structure that represents
-  /// an OSC address and an arbitrary number of values to be sent to that address.
-  /// </summary>
-  public class OscMessage
-  {
-   /// <summary>
-   /// The OSC address of the message as a string.
-   /// </summary>
-   public string Address;
-   /// <summary>
-   /// The list of values to be delivered to the Address.
-   /// </summary>
-   public ArrayList Values;
+/// <summary>
+/// The OscMessage class is a data structure that represents
+/// an OSC address and an arbitrary number of values to be sent to that address.
+/// </summary>
+public class OscMessage
+{
+    /// <summary>
+    /// The OSC address of the message as a string.
+    /// </summary>
+    public string Address;
+    /// <summary>
+    /// The list of values to be delivered to the Address.
+    /// </summary>
+    public ArrayList Values;
+
     public OscMessage()
     {
-      Values = new ArrayList();
+        Values = new ArrayList();
     }
-  }
+}
 
-  public delegate void OscMessageHandler( OscMessage oscM );
+public delegate void OscMessageHandler(OscMessage oscM);
 
-  /// <summary>
-  /// The Osc class provides the methods required to send, receive, and manipulate OSC messages.
-  /// Several of the helper methods are static since a running Osc instance is not required for 
-  /// their use.
-  /// 
-  /// When instanciated, the Osc class opens the PacketIO instance that's handed to it and 
-  /// begins to run a reader thread.  The instance is then ready to service Send OscMessage requests 
-  /// and to start supplying OscMessages as received back.
-  /// 
-  /// The Osc class can be called to Send either individual messages or collections of messages
-  /// in an Osc Bundle.  Receiving is done by delegate.  There are two ways: either submit a method
-  /// to receive all incoming messages or submit a method to handle only one particular address.
-  /// 
-  /// Messages can be encoded and decoded from Strings via the static methods on this class, or
-  /// can be hand assembled / disassembled since they're just a string (the address) and a list 
-  /// of other parameters in Object form. 
-  /// 
-  /// </summary>
-  public class Osc : MonoBehaviour
-  {
-      private UDPPacketIO OscPacketIO;
-      Thread ReadThread;
-      private bool ReaderRunning;
-      private OscMessageHandler AllMessageHandler;
-      Hashtable AddressTable;
+/// <summary>
+/// The Osc class provides the methods required to send, receive, and manipulate OSC messages.
+/// Several of the helper methods are static since a running Osc instance is not required for 
+/// their use.
+/// 
+/// When instanciated, the Osc class opens the PacketIO instance that's handed to it and 
+/// begins to run a reader thread.  The instance is then ready to service Send OscMessage requests 
+/// and to start supplying OscMessages as received back.
+/// 
+/// The Osc class can be called to Send either individual messages or collections of messages
+/// in an Osc Bundle.  Receiving is done by delegate.  There are two ways: either submit a method
+/// to receive all incoming messages or submit a method to handle only one particular address.
+/// 
+/// Messages can be encoded and decoded from Strings via the static methods on this class, or
+/// can be hand assembled / disassembled since they're just a string (the address) and a list 
+/// of other parameters in Object form. 
+/// 
+/// </summary>
+public class Osc : MonoBehaviour
+{
+    private UDPPacketIO OscPacketIO;
+    Thread ReadThread;
+    private bool ReaderRunning;
+    private OscMessageHandler AllMessageHandler;
+    Hashtable AddressTable;
 
 		
-	void Start() {
-		//do nothing, init must be called	
-	}
-	
-	public void init(UDPPacketIO oscPacketIO){
-	  OscPacketIO = oscPacketIO;
+    void Start()
+    {
+        //do nothing, init must be called	
+    }
 
-      // Create the hashtable for the address lookup mechanism
-      AddressTable = new Hashtable();
+    public void init(UDPPacketIO oscPacketIO)
+    {
+        OscPacketIO = oscPacketIO;
 
-      ReadThread = new Thread(Read);
-      ReaderRunning = true;
-      ReadThread.IsBackground = true;      
-      ReadThread.Start();
-	}
-	
+        // Create the hashtable for the address lookup mechanism
+        AddressTable = new Hashtable();
+
+        ReadThread = new Thread(Read);
+        ReaderRunning = true;
+        ReadThread.IsBackground = true;      
+        ReadThread.Start();
+    }
+
     /// <summary>
     /// Make sure the PacketExchange is closed.
     /// </summary>
     ~Osc()
     {           
-    	if (ReaderRunning) Cancel();
+        if (ReaderRunning)
+            Cancel();
         //Debug.LogError("~Osc");
     }
-    
+
     public void Cancel()
     {
         //Debug.Log("Osc Cancel start");
@@ -223,10 +227,9 @@ using System;
                     Thread.Sleep(20);
             }
         }
-		
-		 catch (Exception e)
+        catch (Exception e)
         {
-            //Debug.Log("ThreadAbortException"+e);
+            Debug.Log("ThreadAbortException" + e);
         }
         finally
         {
@@ -242,11 +245,11 @@ using System;
     /// serializes it into a byte[] suitable for sending to the PacketIO.
     /// </summary>
     /// <param name="oscMessage">The OSC Message to send.</param>   
-    public void Send( OscMessage oscMessage )
+    public void Send(OscMessage oscMessage)
     {
-      byte[] packet = new byte[1000];
-      int length = Osc.OscMessageToPacket( oscMessage, packet, 1000 );
-      OscPacketIO.SendPacket( packet, length);
+        byte[] packet = new byte[1000];
+        int length = Osc.OscMessageToPacket(oscMessage, packet, 1000);
+        OscPacketIO.SendPacket(packet, length);
     }
 
     /// <summary>
@@ -256,9 +259,9 @@ using System;
     /// <param name="oms">The OSC Message to send.</param>   
     public void Send(ArrayList oms)
     {
-      byte[] packet = new byte[1000];
-      int length = Osc.OscMessagesToPacket(oms, packet, 1000);
-      OscPacketIO.SendPacket(packet, length);
+        byte[] packet = new byte[1000];
+        int length = Osc.OscMessagesToPacket(oms, packet, 1000);
+        OscPacketIO.SendPacket(packet, length);
     }
 
     /// <summary>
@@ -268,7 +271,7 @@ using System;
     /// <param name="amh">The method to call back on.</param>   
     public void SetAllMessageHandler(OscMessageHandler amh)
     {
-      AllMessageHandler = amh;
+        AllMessageHandler = amh;
     }
 
     /// <summary>
@@ -280,7 +283,7 @@ using System;
     /// <param name="ah">The method to call back on.</param>   
     public void SetAddressHandler(string key, OscMessageHandler ah)
     {
-      Hashtable.Synchronized(AddressTable).Add(key, ah);
+        Hashtable.Synchronized(AddressTable).Add(key, ah);
     }
 
     
@@ -292,14 +295,14 @@ using System;
     /// <returns>The OscMessage as a string.</returns>
     public static string OscMessageToString(OscMessage message)
     {
-      StringBuilder s = new StringBuilder();
-      s.Append(message.Address);
-      foreach( object o in message.Values )
-      {
-        s.Append(" ");
-        s.Append(o.ToString());
-      }
-      return s.ToString();
+        StringBuilder s = new StringBuilder();
+        s.Append(message.Address);
+        foreach (object o in message.Values)
+        {
+            s.Append(" ");
+            s.Append(o.ToString());
+        }
+        return s.ToString();
     }
 
     /// <summary>
@@ -309,75 +312,75 @@ using System;
     /// <returns>The OscMessage.</returns>
     public static OscMessage StringToOscMessage(string message)
     {
-      OscMessage oM = new OscMessage();
-      Console.WriteLine("Splitting " + message);
-      string[] ss = message.Split(new char[] { ' ' });
-      IEnumerator sE = ss.GetEnumerator();
-      if (sE.MoveNext())
-        oM.Address = (string)sE.Current;
-      while ( sE.MoveNext() )
-      {
-        string s = (string)sE.Current;
-        // Console.WriteLine("  <" + s + ">");
-        if (s.StartsWith("\""))
+        OscMessage oM = new OscMessage();
+        Console.WriteLine("Splitting " + message);
+        string[] ss = message.Split(new char[] { ' ' });
+        IEnumerator sE = ss.GetEnumerator();
+        if (sE.MoveNext())
+            oM.Address = (string)sE.Current;
+        while (sE.MoveNext())
         {
-          StringBuilder quoted = new StringBuilder();
-          bool looped = false;
-          if (s.Length > 1)
-            quoted.Append(s.Substring(1));
-          else
-            looped = true;
-          while (sE.MoveNext())
-          {
-            string a = (string)sE.Current;
-            // Console.WriteLine("    q:<" + a + ">");
-            if (looped)
-              quoted.Append(" ");
-            if (a.EndsWith("\""))
+            string s = (string)sE.Current;
+            // Console.WriteLine("  <" + s + ">");
+            if (s.StartsWith("\""))
             {
-              quoted.Append(a.Substring(0, a.Length - 1));
-              break;
+                StringBuilder quoted = new StringBuilder();
+                bool looped = false;
+                if (s.Length > 1)
+                    quoted.Append(s.Substring(1));
+                else
+                    looped = true;
+                while (sE.MoveNext())
+                {
+                    string a = (string)sE.Current;
+                    // Console.WriteLine("    q:<" + a + ">");
+                    if (looped)
+                        quoted.Append(" ");
+                    if (a.EndsWith("\""))
+                    {
+                        quoted.Append(a.Substring(0, a.Length - 1));
+                        break;
+                    }
+                    else
+                    {
+                        if (a.Length == 0)
+                            quoted.Append(" ");
+                        else
+                            quoted.Append(a);
+                    }
+                    looped = true;
+                }
+                oM.Values.Add(quoted.ToString());
             }
             else
             {
-              if (a.Length == 0)
-                quoted.Append(" ");
-              else
-                quoted.Append(a);
-            }
-            looped = true;
-          }
-          oM.Values.Add(quoted.ToString());
-        }
-        else
-        {
-          if (s.Length > 0)
-          {
-            try
-            {
-              int i = int.Parse(s);
-              // Console.WriteLine("  i:" + i);
-              oM.Values.Add(i);
-            }
-            catch
-            {
-              try
-              {
-                float f = float.Parse(s);
-                // Console.WriteLine("  f:" + f);
-                oM.Values.Add(f);
-              }
-              catch
-              {
-                // Console.WriteLine("  s:" + s);
-                oM.Values.Add(s);
-              }
-            }
+                if (s.Length > 0)
+                {
+                    try
+                    {
+                        int i = int.Parse(s);
+                        // Console.WriteLine("  i:" + i);
+                        oM.Values.Add(i);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            float f = float.Parse(s);
+                            // Console.WriteLine("  f:" + f);
+                            oM.Values.Add(f);
+                        }
+                        catch
+                        {
+                            // Console.WriteLine("  s:" + s);
+                            oM.Values.Add(s);
+                        }
+                    }
 
-          }
+                }
+            }
         }
-      }
-      return oM;
+        return oM;
     }
 
     /// <summary>
@@ -388,9 +391,9 @@ using System;
     /// <returns>An ArrayList of OscMessages.</returns>
     public static ArrayList PacketToOscMessages(byte[] packet, int length)
     {
-      ArrayList messages = new ArrayList();
-      ExtractMessages(messages, packet, 0, length);
-      return messages;
+        ArrayList messages = new ArrayList();
+        ExtractMessages(messages, packet, 0, length);
+        return messages;
     }
 
     /// <summary>
@@ -402,32 +405,32 @@ using System;
     /// <returns>The length of the packet</returns>
     public static int OscMessagesToPacket(ArrayList messages, byte[] packet, int length)
     {
-      int index = 0;
-      if (messages.Count == 1)
-        index = OscMessageToPacket((OscMessage)messages[0], packet, 0, length);
-      else
-      {
-        // Write the first bundle bit
-        index = InsertString("#bundle", packet, index, length);
-        // Write a null timestamp (another 8bytes)
-        int c = 8;
-        while (( c-- )>0)
-          packet[index++]++;
-        // Now, put each message preceded by it's length
-        foreach (OscMessage oscM in messages)
+        int index = 0;
+        if (messages.Count == 1)
+            index = OscMessageToPacket((OscMessage)messages[0], packet, 0, length);
+        else
         {
-          int lengthIndex = index;
-          index += 4;
-          int packetStart = index;
-          index = OscMessageToPacket(oscM, packet, index, length);
-          int packetSize = index - packetStart;
-          packet[lengthIndex++] = (byte)((packetSize >> 24) & 0xFF);
-          packet[lengthIndex++] = (byte)((packetSize >> 16) & 0xFF);
-          packet[lengthIndex++] = (byte)((packetSize >> 8) & 0xFF);
-          packet[lengthIndex++] = (byte)((packetSize) & 0xFF);
+            // Write the first bundle bit
+            index = InsertString("#bundle", packet, index, length);
+            // Write a null timestamp (another 8bytes)
+            int c = 8;
+            while ((c--) > 0)
+                packet[index++]++;
+            // Now, put each message preceded by it's length
+            foreach (OscMessage oscM in messages)
+            {
+                int lengthIndex = index;
+                index += 4;
+                int packetStart = index;
+                index = OscMessageToPacket(oscM, packet, index, length);
+                int packetSize = index - packetStart;
+                packet[lengthIndex++] = (byte)((packetSize >> 24) & 0xFF);
+                packet[lengthIndex++] = (byte)((packetSize >> 16) & 0xFF);
+                packet[lengthIndex++] = (byte)((packetSize >> 8) & 0xFF);
+                packet[lengthIndex++] = (byte)((packetSize) & 0xFF);
+            }
         }
-      }
-      return index;
+        return index;
     }
 
     /// <summary>
@@ -440,7 +443,7 @@ using System;
     /// <returns>The length of the packet</returns>
     public static int OscMessageToPacket(OscMessage oscM, byte[] packet, int length)
     {
-      return OscMessageToPacket(oscM, packet, 0, length);
+        return OscMessageToPacket(oscM, packet, 0, length);
     }
 
     /// <summary>
@@ -454,58 +457,58 @@ using System;
     /// <returns>The index into the packet after the last OscMessage.</returns>
     private static int OscMessageToPacket(OscMessage oscM, byte[] packet, int start, int length)
     {
-      int index = start;
-      index = InsertString(oscM.Address, packet, index, length);
-      //if (oscM.Values.Count > 0)
-      {
-        StringBuilder tag = new StringBuilder();
-        tag.Append(",");
-        int tagIndex = index;
-        index += PadSize(2 + oscM.Values.Count);
-
-        foreach (object o in oscM.Values)
+        int index = start;
+        index = InsertString(oscM.Address, packet, index, length);
+        //if (oscM.Values.Count > 0)
         {
-          if (o is int)
-          {
-            int i = (int)o;
-            tag.Append("i");
-            packet[index++] = (byte)((i >> 24) & 0xFF);
-            packet[index++] = (byte)((i >> 16) & 0xFF);
-            packet[index++] = (byte)((i >> 8) & 0xFF);
-            packet[index++] = (byte)((i) & 0xFF);
-          }
-          else
-          {
-            if (o is float)
+            StringBuilder tag = new StringBuilder();
+            tag.Append(",");
+            int tagIndex = index;
+            index += PadSize(2 + oscM.Values.Count);
+
+            foreach (object o in oscM.Values)
             {
-              float f = (float)o;
-              tag.Append("f");
-              byte[] buffer = new byte[4];
-              MemoryStream ms = new MemoryStream(buffer);
-              BinaryWriter bw = new BinaryWriter(ms);
-              bw.Write(f);
-              packet[index++] = buffer[3];
-              packet[index++] = buffer[2];
-              packet[index++] = buffer[1];
-              packet[index++] = buffer[0];
+                if (o is int)
+                {
+                    int i = (int)o;
+                    tag.Append("i");
+                    packet[index++] = (byte)((i >> 24) & 0xFF);
+                    packet[index++] = (byte)((i >> 16) & 0xFF);
+                    packet[index++] = (byte)((i >> 8) & 0xFF);
+                    packet[index++] = (byte)((i) & 0xFF);
+                }
+                else
+                {
+                    if (o is float)
+                    {
+                        float f = (float)o;
+                        tag.Append("f");
+                        byte[] buffer = new byte[4];
+                        MemoryStream ms = new MemoryStream(buffer);
+                        BinaryWriter bw = new BinaryWriter(ms);
+                        bw.Write(f);
+                        packet[index++] = buffer[3];
+                        packet[index++] = buffer[2];
+                        packet[index++] = buffer[1];
+                        packet[index++] = buffer[0];
+                    }
+                    else
+                    {
+                        if (o is string)
+                        {
+                            tag.Append("s");
+                            index = InsertString(o.ToString(), packet, index, length);
+                        }
+                        else
+                        {
+                            tag.Append("?");
+                        }
+                    }
+                }
             }
-            else
-            {
-              if (o is string)
-              {
-                tag.Append("s");
-                index = InsertString(o.ToString(), packet, index, length);
-              }
-              else
-              {
-                tag.Append("?");
-              }
-            }
-          }
+            InsertString(tag.ToString(), packet, tagIndex, length);
         }
-        InsertString(tag.ToString(), packet, tagIndex, length);
-      }
-      return index;
+        return index;
     }
 
     /// <summary>
@@ -519,28 +522,29 @@ using System;
     /// <returns>The index after the last OscMessage read.</returns>
     private static int ExtractMessages(ArrayList messages, byte[] packet, int start, int length)
     {
-      int index = start;
-      switch ( (char)packet[ start ] )
-      {
-        case '/':
-          index = ExtractMessage( messages, packet, index, length );
-          break;
-        case '#':
-          string bundleString = ExtractString(packet, start, length);
-          if ( bundleString == "#bundle" )
-          {
-            // skip the "bundle" and the timestamp
-            index+=16;
-            while ( index < length )
-            {
-              int messageSize = ( packet[index++] << 24 ) + ( packet[index++] << 16 ) + ( packet[index++] << 8 ) + packet[index++];
-              /*int newIndex = */ExtractMessages( messages, packet, index, length ); 
-              index += messageSize;
-            }            
-          }
-          break;
-      }
-      return index;
+        int index = start;
+        switch ((char)packet[start])
+        {
+            case '/':
+                index = ExtractMessage(messages, packet, index, length);
+                break;
+            case '#':
+                string bundleString = ExtractString(packet, start, length);
+                if (bundleString == "#bundle")
+                {
+                    // skip the "bundle" and the timestamp
+                    index += 16;
+                    while (index < length)
+                    {
+                        int messageSize = (packet[index++] << 24) + (packet[index++] << 16) + (packet[index++] << 8) + packet[index++];
+                        /*int newIndex = */
+                        ExtractMessages(messages, packet, index, length); 
+                        index += messageSize;
+                    }            
+                }
+                break;
+        }
+        return index;
     }
 
     /// <summary>
@@ -553,48 +557,48 @@ using System;
     /// <returns>The index after the OscMessage is read.</returns>
     private static int ExtractMessage(ArrayList messages, byte[] packet, int start, int length)
     {
-      OscMessage oscM = new OscMessage();
-      oscM.Address = ExtractString(packet, start, length);
-      int index = start + PadSize(oscM.Address.Length+1);
-      string typeTag = ExtractString(packet, index, length);
-      index += PadSize(typeTag.Length + 1);
-      //oscM.Values.Add(typeTag);
-      foreach (char c in typeTag)
-      {
-        switch (c)
+        OscMessage oscM = new OscMessage();
+        oscM.Address = ExtractString(packet, start, length);
+        int index = start + PadSize(oscM.Address.Length + 1);
+        string typeTag = ExtractString(packet, index, length);
+        index += PadSize(typeTag.Length + 1);
+        //oscM.Values.Add(typeTag);
+        foreach (char c in typeTag)
         {
-          case ',':
-            break;
-          case 's':
+            switch (c)
             {
-              string s = ExtractString(packet, index, length);
-              index += PadSize(s.Length + 1);
-              oscM.Values.Add(s);
-              break;
-            }
-          case 'i':
-            {
-              int i = ( packet[index++] << 24 ) + ( packet[index++] << 16 ) + ( packet[index++] << 8 ) + packet[index++];
-              oscM.Values.Add(i);
-              break;
-            }
-          case 'f':
-            {
-              byte[] buffer = new byte[4];
-              buffer[3] = packet[index++];
-              buffer[2] = packet[index++];
-              buffer[1] = packet[index++];
-              buffer[0] = packet[index++];
-              MemoryStream ms = new MemoryStream(buffer);
-              BinaryReader br = new BinaryReader(ms);
-              float f = br.ReadSingle();
-              oscM.Values.Add(f);
-              break;
+                case ',':
+                    break;
+                case 's':
+                    {
+                        string s = ExtractString(packet, index, length);
+                        index += PadSize(s.Length + 1);
+                        oscM.Values.Add(s);
+                        break;
+                    }
+                case 'i':
+                    {
+                        int i = (packet[index++] << 24) + (packet[index++] << 16) + (packet[index++] << 8) + packet[index++];
+                        oscM.Values.Add(i);
+                        break;
+                    }
+                case 'f':
+                    {
+                        byte[] buffer = new byte[4];
+                        buffer[3] = packet[index++];
+                        buffer[2] = packet[index++];
+                        buffer[1] = packet[index++];
+                        buffer[0] = packet[index++];
+                        MemoryStream ms = new MemoryStream(buffer);
+                        BinaryReader br = new BinaryReader(ms);
+                        float f = br.ReadSingle();
+                        oscM.Values.Add(f);
+                        break;
+                    }
             }
         }
-      }
-      messages.Add( oscM );
-      return index;
+        messages.Add(oscM);
+        return index;
     }
 
     /// <summary>
@@ -606,20 +610,20 @@ using System;
     /// <returns>The string</returns>
     private static string ExtractString(byte[] packet, int start, int length)
     {
-      StringBuilder sb = new StringBuilder();
-      int index = start;
-      while (packet[index] != 0 && index < length)
-        sb.Append((char)packet[index++]);
-      return sb.ToString();
+        StringBuilder sb = new StringBuilder();
+        int index = start;
+        while (packet[index] != 0 && index < length)
+            sb.Append((char)packet[index++]);
+        return sb.ToString();
     }
 
     private static string Dump(byte[] packet, int start, int length)
     {
-      StringBuilder sb = new StringBuilder();
-      int index = start;
-      while (index < length)
-        sb.Append(packet[index++]+"|");
-      return sb.ToString();
+        StringBuilder sb = new StringBuilder();
+        int index = start;
+        while (index < length)
+            sb.Append(packet[index++] + "|");
+        return sb.ToString();
     }
 
     /// <summary>
@@ -632,22 +636,22 @@ using System;
     /// <returns>An index to the next byte in the packet after the padded string.</returns>
     private static int InsertString(string s, byte[] packet, int start, int length)
     {
-      int index = start;
-      foreach (char c in s)
-      {
-        packet[index++] = (byte)c;
-        if (index == length)
-          return index;
-      }
-      packet[index++] = 0;
-      int pad = (s.Length+1) % 4;
-      if (pad != 0)
-      {
-        pad = 4 - pad;
-        while (pad-- > 0)
-          packet[index++] = 0;
-      }
-      return index;
+        int index = start;
+        foreach (char c in s)
+        {
+            packet[index++] = (byte)c;
+            if (index == length)
+                return index;
+        }
+        packet[index++] = 0;
+        int pad = (s.Length + 1) % 4;
+        if (pad != 0)
+        {
+            pad = 4 - pad;
+            while (pad-- > 0)
+                packet[index++] = 0;
+        }
+        return index;
     }
 
     /// <summary>
@@ -657,11 +661,11 @@ using System;
     /// <returns>padded size</returns>
     private static int PadSize(int rawSize)
     {
-      int pad = rawSize % 4;
-      if (pad == 0)
-        return rawSize;
-      else
-        return rawSize + (4 - pad);
+        int pad = rawSize % 4;
+        if (pad == 0)
+            return rawSize;
+        else
+            return rawSize + (4 - pad);
     }
-  }
+}
 //}

@@ -7,3 +7,5 @@ Unity/ProjectSettings/*
 *.userprefs
 *.unityproj
 *.csproj
+Unity/.vscode/settings.json
+Unity/Temp/*
